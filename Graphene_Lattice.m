@@ -16,6 +16,11 @@ classdef Graphene_Lattice
     
     methods 
         function glat = Graphene_Lattice(sigma_temp, delta_temp, a0_temp, a1_temp, a2_temp)
+            % Graphene_Lattice constructor function for Graphene_Lattice
+            % class.
+            % Takes the parameters sigma, strain delta, C-C distance a0 and
+            % lattice vectors a1 and a2
+            
             if nargin == 5
                 glat.a0 = a0_temp;
                 glat.sigma = sigma_temp;
@@ -31,14 +36,17 @@ classdef Graphene_Lattice
         end
         
         function F = f(k1, k2, glat)
+            % helper function for calculating graphene potential
             F = exp(1i*(dot(glat.g1*k1 + glat.g2*k2, glat.b1))) + exp(1i*(dot(glat.g1*k1 + glat.g2*k2, glat.b2)));
         end
 
         function G = g(k1, k2, glat)
+            % helper function for calculating graphene potential
             G = sqrt(sum((k1*glat.g1 + k2*glat.g2).^2));
         end
 
         function c = C(k1, k2, z, glat)
+            % helper function for calculating graphene potential
             gC = g(k1, k2, glat);
 
             lj_factor = gC*glat.sigma^2/(2*z);
@@ -47,10 +55,13 @@ classdef Graphene_Lattice
         end
 
         function locexp = location_exponent(k1, k2, r, glat)
+            % helper function for calculating graphene potential.
+            % e^(i*dot(g,r))
             locexp = exp(1i*(dot(glat.g1.*k1 + glat.g2.*k2, r)));
         end
 
         function un = Un(k1, k2, x, y, z, glat)
+            % helper function for calculating graphene potential
             r = [x, y];
             e_gr = location_exponent(k1, k2, r, glat);
 
@@ -58,6 +69,8 @@ classdef Graphene_Lattice
         end
 
         function vn = Vn(x, y, z, gterms, glat)
+            % Calculate the He-Graphene potential at a location (x,y,z)
+            % with the paramters from glat
             V = 0;
 
             for i = -gterms:gterms
@@ -74,10 +87,12 @@ classdef Graphene_Lattice
         end	
 
         function c0 = C0(z, glat)
+            % gterm=0 form of He-Graphene potential
             c0 = 4/5*(glat.sigma/z)^10 - 2*(glat.sigma/z)^4;
         end
 
         function vz = V_z_0(z_nondim, gterms, glat)
+            % He-Graphene potential at (x,y)=(0,0) for a range of z's
             V = zeros(length(z_nondim), 1);
 
             for i = -gterms:gterms
@@ -96,6 +111,7 @@ classdef Graphene_Lattice
         end
 
         function vr = V_r(x, y, z, gterms, glat)
+            % He-Graphene potential for a grid of x-y at a certain z
             V = zeros(length(x), length(y));
 
             for i = 1:length(x)
@@ -108,6 +124,7 @@ classdef Graphene_Lattice
         end
 
         function F_t = Fourier_Terms(gterms, zmin, glat)
+            % generates the fourier components of the He-Graphene potential
             Vfourier = complex(zeros(2*gterms+1, 2*gterms+1));
 
             for k1 = -gterms:gterms
@@ -124,6 +141,8 @@ classdef Graphene_Lattice
         end
 
         function v = V_fourier(x, y, gterms, Vfourier, scale, glat)
+            % generates the He-Graphene potential from its the fourier
+            % components for a meshgrid of x-y
             V = complex(zeros(length(x), length(y)));
 
             for i = 1:length(x)
@@ -142,6 +161,9 @@ classdef Graphene_Lattice
         end	
 
         function v = V_fourier_grid(xgrid, ygrid, gterms, Vfourier, scale, glat)
+            % generates the He-Graphene potential from its the fourier
+            % components for a 2d array of points in x-y, takes the x and y
+            % component of each point from xgrid and ygrid
             V = complex(zeros(size(xgrid, 1), size(ygrid, 2)));
 
             for ix = 1:size(xgrid, 1)
