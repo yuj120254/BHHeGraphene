@@ -37,7 +37,7 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Generat
 
             % strain
             delta = 0;
-            strain_string = sprintf("i%02d", 100*isotropic_params(1, is));
+            strain_string = sprintf("%02d", 100*isotropic_params(1, is));
 
             sigma = isotropic_params(2, is); % In angstroms
             epsilon = isotropic_params(3, is); % In Kelvin
@@ -47,7 +47,7 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Generat
 
             % strain
             delta = anisotropic_params(1, is);
-            strain_string = sprintf("a%02d", 100*anisotropic_params(1, is));
+            strain_string = sprintf("%02d", 100*anisotropic_params(1, is));
 
             sigma = anisotropic_params(2, is); % In angstroms
             epsilon = anisotropic_params(3, is); % In Kelvin
