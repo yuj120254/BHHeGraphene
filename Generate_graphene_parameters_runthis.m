@@ -14,12 +14,21 @@ isotropic_params = [[0.00,0.05,0.10,0.15,0.20,0.25,0.30],
 % indicates the type of strain 
 strain_type = "anisotropic";
 
+% load density in z for V0
+z_rho_V0 = dlmread("V0_rho0.txt");
+z_V0 = z_rho_V0(200:350,1);
+rho_V0 = z_rho_V0(200:350,2)/sum(z_rho_V0(200:350,2));% Important: always normalize rho here
+
 % this index corresponds to the values of strain in the first column of the
 % respective params files
-is = 1;
+%is = 1;
+
+is_array = [1];%[1,2,3,4,9,14];
 
 disp(strcat("computing graphene paramters for ", strain_type, " strain:"));
-strain = anisotropic_params(1, is)
+for s = is_array
+    strain = anisotropic_params(1, s)
+end
 
 %%%%%%%%%%%%%%%%
 % function to generate all the parameters necessary for the
@@ -27,27 +36,17 @@ strain = anisotropic_params(1, is)
 % Takes a varying number of paramters, there are currently 2 numbers
 % accepted:
 % If you want to calculate graphene parameters for a minimum of
-% V(0,0,z), the inputs are (strain_type, is, "min")
+% V(0,0,z), the inputs are (strain_type, is(integer or array of intergers), "min")
 % If you want to calculate graphene parameters for a specific value of
-% z, the inputs are (strain_type, is, "z", 2.5), here 2.5 is the
-% specified value, only change that.
+% z, the inputs are (strain_type, is(integer or array of intergers), "z", height(number>0))
+% If you want to average the graphene potential in z 
+% the inputs are (strain_type, is(integer or array of intergers), "average", [array of z's], [array of rhos])
 %%%%%%%%%%%%%%%%
-[V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Generate_graphene_parameters(strain_type, is, "z", 2.57);
 
-% writes output files
-dlmwrite(strcat("V_graphene", strain_string, ".txt"), V, ',')
+[V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = ...
+    Generate_graphene_parameters(strain_type, is_array, "average", z_V0, rho_V0);
+%[V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = ...
+%    Generate_graphene_parameters(strain_type, is_array, "z", 2.57);
 
-dlmwrite(strcat("V_graphene_lat", strain_string, ".txt"), V_lat, ',')
 
-dlmwrite(strcat("V_fourier", strain_string, ".txt"), V_fc, ',')
 
-dlmwrite(strcat("Lattice_Vectors", strain_string, ".txt"), lattice_vectors, ',')
-
-dlmwrite(strcat("Julia_grid", strain_string, ".txt"), grid, ',')
-
-dlmwrite(strcat("Julia_params", strain_string, ".txt"), param, ',')
-
-% loop over different values of strain
-for is = 1:1%length(params[1])
-
-end
