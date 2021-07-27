@@ -16,8 +16,8 @@ strain_type = "anisotropic";
 
 % load density in z for V0
 z_rho_V0 = dlmread("V0_rho0.txt");
-z_V0 = z_rho_V0(200:350,1);
-rho_V0 = z_rho_V0(200:350,2)/sum(z_rho_V0(200:350,2));% Important: always normalize rho here
+z_V0 = z_rho_V0(200:5:350,1);
+rho_V0 = z_rho_V0(200:5:350,2)/sum(z_rho_V0(200:5:350,2));% Important: always normalize rho here
 
 % this index corresponds to the values of strain in the first column of the
 % respective params files
@@ -46,7 +46,7 @@ end
 [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = ...
     Generate_graphene_parameters(strain_type, is_array, "average", z_V0, rho_V0);
 %[V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = ...
-%    Generate_graphene_parameters(strain_type, is_array, "z", 2.57);
+%    Generate_graphene_parameters(strain_type, is_array, "z", 2);
 
 
 
