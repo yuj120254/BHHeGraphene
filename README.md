@@ -14,3 +14,6 @@ Currently there are 4 working cases of He on Graphene that is included in this f
 2) Calculating Graphene Parameters at some fixed z
 3) Calculating Graphene Parameters while averaging in z
 4) Calculating Graphene Parameters for some external potential with isotropic strain.
+
+
+Currently the file make_2D_Bloch_bands_v13a.m is set up to work with the example of case 1 in the main file.
