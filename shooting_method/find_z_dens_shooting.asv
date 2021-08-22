@@ -1,0 +1,39 @@
+% Citation:
+% Martin V. (2021). Shooting method (https://www.mathworks.com/matlabcentral/fileexchange/32451-shooting-method), MATLAB Central File Exchange. Retrieved August 17, 2021.
+digits(100)
+
+V_He_dat0 = dlmread("He_Graphene_V0.txt");
+r_He_He0 = V_He_dat0(:,1);
+V_He_He0 = V_He_dat0(:,2);
+
+V_He_He_rev = flip(V_He_He0);
+r_He_He_rev = flip(r_He_He0);
+
+max = 0;
+hit_max = false;
+max_index = 0;
+
+for ir = 1:length(r_He_He0)
+    if not(hit_max)
+        if  V_He_He_rev(ir) > max
+            hit_max = true;
+            V_He_He_rev(ir) = max;
+            max_index = ir;
+        end
+    else
+    V_He_He_rev(ir) = max;
+    end
+end
+
+n = max_index + 50;
+figure(1)
+plot(r_He_He0(1:n), V_He_He_rev(1:n));
+
+[E_found, Psis, dPsis] = shooting_method_function(0, 1, r_He_He0(1:n), V_He_He_rev(1:n), 1, 1, 1, -250);
+
+% [x1, x2] = ShootingMethodPredict(0, 1, r_He_He0, V_He_He_rev, vpa(-149.3243));
+
+figure(3)
+plot(r_He_He_rev(1:n), Psis(1,:))
+
+
