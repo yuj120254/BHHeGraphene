@@ -11,9 +11,10 @@
 %%%%%%%%%%%%%%%%
 
 function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphene_paramters_function(varargin)
-    % sets the grid in z and C-C distance a0
-    z = [2:0.01:6]; % In angstroms This is only for minimizing V in z, not used in other options
-    a0_real = 1.42; % In angstroms
+    % sets the grid in z 
+    z = [2:0.01:6]; % In angstroms. This is only for minimizing V in z, not used in other calculations
+    
+    % poisson ratio
     poisson = 0.165; % poisson ratio, for anisotropic strain
     
     % the paramters sigma and epsilon for all strain, using the latest values
@@ -27,18 +28,18 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
    
     % array of strain values that we are calculating parameters for
     is_array = varargin{2};
-    iss = 1
+    iis = 1;% Index of strain array, useful when non consecutive strain values are used
     
     % loop over strain
     for is = is_array
         % establish parameters for isotropic of anisotropic strain
         if varargin{1} == "isotropic" 
-            % C-C distance
+            % C-C distance, affected by strain for isotropic strain
             a0_real = (1 + isotropic_params(1, is)) * 1.42; % In angstroms
 
-            % strain
+            % only for anisotropic strain, does not change for isotropic strain
             delta = 0;
-            strain_string = sprintf("i%02d", 100*isotropic_params(1, is));
+            strain_string = sprintf("i%02d", 100*isotropic_params(1, is)); % String for outputs
 
             sigma = isotropic_params(2, is); % In angstroms
             epsilon = isotropic_params(3, is); % In Kelvin
@@ -46,9 +47,9 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
             % C-C distance
             a0_real = 1.42; % In angstroms
 
-            % strain
+            % anisotropic strain
             delta = anisotropic_params(1, is);
-            strain_string = sprintf("a%02d", 100*anisotropic_params(1, is));
+            strain_string = sprintf("a%02d", 100*anisotropic_params(1, is)); % String for outputs
 
             sigma = anisotropic_params(2, is); % In angstroms
             epsilon = anisotropic_params(3, is); % In Kelvin
@@ -91,12 +92,13 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
 
             [~, I] = min(Va);
 
+            % z set to the minimum of V(0,0)
             zmin_nondim = z_nondim(I);
 
         elseif nargin == 4
             % manually sets the z at which all the rest of the calculation happens
-            zmin_nondim = varargin{4}(iss)*space_normalization;
-        else % just some random value so the next part of the code runs
+            zmin_nondim = varargin{4}(iis)*space_normalization;
+        else % for all other cases this is not important
             zmin_nondim = 2;
         end
 
@@ -104,12 +106,16 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
         % calculations and calculates the fourier components
         gterms = 2;
         
+        % Calculate the potential for anisotropic from an external
+        % potential, taking the value of the SP and max of the potential
         if nargin == 6
+            % Check to make sure the type of strain is correct
             if varargin{1} == "anisotropic" 
                 disp("wrong type of strain")
                 break
             end
             
+            % set up the set of foureir coefficients that are the same
             Vf1_array = zeros(5,5);
             Vf1_array(2,2) = 1;
             Vf1_array(2,3) = 1;
@@ -126,10 +132,12 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
             Vf2_array(4,5) = 1;
             Vf2_array(5,4) = 1;
 
+            % Set the locations at which the potential is sampled
             r_min = [0, 0];
             r_max = (a1_nondim+a2_nondim)/3;
             r_sp = a1_nondim/2;
             
+            % Calculates the sum for if the Fourier coefficient is 1
             V1_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf1_array, 1, glat))/energy_scale;
             V2_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf2_array, 1, glat))/energy_scale;
             V1_max = real(V_fourier(r_max(1), r_max(2), gterms, Vf1_array, 1, glat))/energy_scale;
@@ -137,6 +145,8 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
             V1_sp = real(V_fourier(r_sp(1), r_sp(2), gterms, Vf1_array, 1, glat))/energy_scale;
             V2_sp = real(V_fourier(r_sp(1), r_sp(2), gterms, Vf2_array, 1, glat))/energy_scale;
             
+            % Set up the matrix  which goes from the coefficients to the
+            % external potential
             a = V1_max - V1_min;
             b = V2_max - V2_min;
             c = V1_sp - V1_min;
@@ -144,18 +154,25 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
 
             A = [a b; c d]*energy_scale;
             
-            external_potential_params = [varargin{6}(iss)-varargin{4}(iss), varargin{5}(iss)-varargin{4}(iss)]';
+            % Sets up the values of the potential sampled
+            external_potential_params = [varargin{6}(iis)-varargin{4}(iis), varargin{5}(iis)-varargin{4}(iis)]';
             
+            % Calculates the Fourier coefficients
             Vf_fit = A\external_potential_params;
             
+            % Constructs the full Fourier coefficients array
             Vfourier = (Vf_fit(1)*Vf1_array + Vf_fit(2)*Vf2_array);
             Vfourier_scaled = Vfourier*energy_scale;
-        elseif nargin == 7  
+
+        % Calculate the potential for isotropic from an external potential,
+        % does not currently work
+        elseif nargin == 8  
+            % Check to make sure the type of strain is correct
             if varargin{1} == "isotropic" 
                 disp("wrong type of strain")
                 break
             end
-       
+            
             Vf1_array = zeros(5,5);
             Vf1_array(2,2) = 1;
             Vf1_array(4,4) = 1;
@@ -177,55 +194,59 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
             Vf4_array(2,4) = 1;
             
             r_min = [0, 0];
-            r_max_para = (a1_nondim+a2_nondim)/3;
-            r_sp_para = a1_nondim/2;
-            r_max_perp = a3_nondim/2 + r_max_para/2;
-            r_sp_perp = a3_nondim/2;
+            r_half_max_para = glat.b2;%(a1_nondim+a2_nondim)/3;
+            r_half_sp_para = a1_nondim/2;
+            r_half_max_perp = glat.b1;%a3_nondim/2 + r_max_para/2;
+            r_half_sp_perp = a3_nondim/2;
+%             r_half_max_para = a1_nondim/2;%(a1_nondim+a2_nondim)/3;
+%             r_half_sp_para = a1_nondim/2;
+%             r_half_max_perp = a3_nondim/4;%a3_nondim/2 + r_max_para/2;
+%             r_half_sp_perp = a3_nondim/2;
 
             V1_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf1_array, 1, glat))/energy_scale;
             V2_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf2_array, 1, glat))/energy_scale;
             V3_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf3_array, 1, glat))/energy_scale;
             V4_min = real(V_fourier(r_min(1), r_min(2), gterms, Vf4_array, 1, glat))/energy_scale;
-            V1_max_para = real(V_fourier(r_max_para(1), r_max_para(2), gterms, Vf1_array, 1, glat))/energy_scale;
-            V2_max_para = real(V_fourier(r_max_para(1), r_max_para(2), gterms, Vf2_array, 1, glat))/energy_scale;
-            V3_max_para = real(V_fourier(r_max_para(1), r_max_para(2), gterms, Vf3_array, 1, glat))/energy_scale;
-            V4_max_para = real(V_fourier(r_max_para(1), r_max_para(2), gterms, Vf4_array, 1, glat))/energy_scale;
-            V1_sp_para = real(V_fourier(r_sp_para(1), r_sp_para(2), gterms, Vf1_array, 1, glat))/energy_scale;
-            V2_sp_para = real(V_fourier(r_sp_para(1), r_sp_para(2), gterms, Vf2_array, 1, glat))/energy_scale;
-            V3_sp_para = real(V_fourier(r_sp_para(1), r_sp_para(2), gterms, Vf3_array, 1, glat))/energy_scale;
-            V4_sp_para = real(V_fourier(r_sp_para(1), r_sp_para(2), gterms, Vf3_array, 1, glat))/energy_scale;
-            V1_max_perp = real(V_fourier(r_max_perp(1), r_max_perp(2), gterms, Vf1_array, 1, glat))/energy_scale;
-            V2_max_perp = real(V_fourier(r_max_perp(1), r_max_perp(2), gterms, Vf2_array, 1, glat))/energy_scale;
-            V3_max_perp = real(V_fourier(r_max_perp(1), r_max_perp(2), gterms, Vf3_array, 1, glat))/energy_scale;
-            V4_max_perp = real(V_fourier(r_max_perp(1), r_max_perp(2), gterms, Vf4_array, 1, glat))/energy_scale;
-            V1_sp_perp = real(V_fourier(r_sp_perp(1), r_sp_perp(2), gterms, Vf1_array, 1, glat))/energy_scale;
-            V2_sp_perp = real(V_fourier(r_sp_perp(1), r_sp_perp(2), gterms, Vf2_array, 1, glat))/energy_scale;
-            V3_sp_perp = real(V_fourier(r_sp_perp(1), r_sp_perp(2), gterms, Vf3_array, 1, glat))/energy_scale;
-            V4_sp_perp = real(V_fourier(r_sp_perp(1), r_sp_perp(2), gterms, Vf4_array, 1, glat))/energy_scale;
+            V1_half_max_para = real(V_fourier(r_half_max_para(1), r_half_max_para(2), gterms, Vf1_array, 1, glat))/energy_scale;
+            V2_half_max_para = real(V_fourier(r_half_max_para(1), r_half_max_para(2), gterms, Vf2_array, 1, glat))/energy_scale;
+            V3_half_max_para = real(V_fourier(r_half_max_para(1), r_half_max_para(2), gterms, Vf3_array, 1, glat))/energy_scale;
+            V4_half_max_para = real(V_fourier(r_half_max_para(1), r_half_max_para(2), gterms, Vf4_array, 1, glat))/energy_scale;
+            V1_half_max_perp = real(V_fourier(r_half_max_perp(1), r_half_max_perp(2), gterms, Vf1_array, 1, glat))/energy_scale;
+            V2_half_max_perp = real(V_fourier(r_half_max_perp(1), r_half_max_perp(2), gterms, Vf2_array, 1, glat))/energy_scale;
+            V3_half_max_perp = real(V_fourier(r_half_max_perp(1), r_half_max_perp(2), gterms, Vf3_array, 1, glat))/energy_scale;
+            V4_half_max_perp = real(V_fourier(r_half_max_perp(1), r_half_max_perp(2), gterms, Vf4_array, 1, glat))/energy_scale;
+            V1_half_sp_para = real(V_fourier(r_half_sp_para(1), r_half_sp_para(2), gterms, Vf1_array, 1, glat))/energy_scale;
+            V2_half_sp_para = real(V_fourier(r_half_sp_para(1), r_half_sp_para(2), gterms, Vf2_array, 1, glat))/energy_scale;
+            V3_half_sp_para = real(V_fourier(r_half_sp_para(1), r_half_sp_para(2), gterms, Vf3_array, 1, glat))/energy_scale;
+            V4_half_sp_para = real(V_fourier(r_half_sp_para(1), r_half_sp_para(2), gterms, Vf4_array, 1, glat))/energy_scale;
+            V1_half_sp_perp = real(V_fourier(r_half_sp_perp(1), r_half_sp_perp(2), gterms, Vf1_array, 1, glat))/energy_scale;
+            V2_half_sp_perp = real(V_fourier(r_half_sp_perp(1), r_half_sp_perp(2), gterms, Vf2_array, 1, glat))/energy_scale;
+            V3_half_sp_perp = real(V_fourier(r_half_sp_perp(1), r_half_sp_perp(2), gterms, Vf3_array, 1, glat))/energy_scale;
+            V4_half_sp_perp = real(V_fourier(r_half_sp_perp(1), r_half_sp_perp(2), gterms, Vf4_array, 1, glat))/energy_scale;
 
-            a = V1_max_para - V1_min;
-            b = V2_max_para - V2_min;
-            c = V3_max_para - V3_min;
-            d = V4_max_para - V4_min;
-            e = V1_sp_para - V1_min;
-            f = V2_sp_para - V2_min;
-            g = V3_sp_para - V3_min;
-            h = V4_sp_para - V4_min;
-            i = V1_max_perp - V1_min;
-            j = V2_max_perp - V2_min;
-            k = V3_max_perp - V3_min;
-            l = V4_max_perp - V4_min;
-            m = V1_sp_perp - V1_min;
-            n = V2_sp_perp - V2_min;
-            o = V3_sp_perp - V3_min;
-            p = V4_sp_perp - V4_min;
+            a = V1_half_sp_perp - V1_min;
+            b = V2_half_sp_perp - V2_min;
+            c = V3_half_sp_perp - V3_min;
+            d = V4_half_sp_perp - V4_min;
+            e = V1_half_sp_para - V1_min;
+            f = V2_half_sp_para - V2_min;
+            g = V3_half_sp_para - V3_min;
+            h = V4_half_sp_para - V4_min;
+            i = V1_half_max_perp - V1_min;
+            j = V2_half_max_perp - V2_min;  
+            k = V3_half_max_perp - V3_min;
+            l = V4_half_max_perp - V4_min;
+            m = V1_half_max_para - V1_min;
+            n = V2_half_max_para - V2_min;
+            o = V3_half_max_para - V3_min;
+            p = V4_half_max_para - V4_min;
 
             A = [a b c d; e f g h; i j k l; m n o p]*energy_scale
             
-            external_potential_params = [varargin{7}(iss)-varargin{4}(iss), varargin{6}(iss)-varargin{4}(iss),...
-                                         varargin{7}(iss)-varargin{4}(iss), varargin{5}(iss)-varargin{4}(iss)]'
-            
-            Vf_fit = A\external_potential_params;
+            external_potential_params = [varargin{5}(iis)-varargin{4}(iis), varargin{6}(iis)-varargin{4}(iis),...
+                                         varargin{7}(iis)-varargin{4}(iis), varargin{8}(iis)-varargin{4}(iis)]'
+                                                 
+            Vf_fit = A\external_potential_params
             
             Vfourier = (Vf_fit(1)*Vf1_array + Vf_fit(2)*Vf2_array + ...
                         Vf_fit(3)*Vf3_array + Vf_fit(4)*Vf4_array);
@@ -275,21 +296,21 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
         Lylat_x = MperiodsYlat * ylat_x;
         Lylat_y = MperiodsYlat * ylat_y;
 
-        xlat_x = [-Lxlat_x/2 : dxlat_x : Lxlat_x/2 + dxlat_x/4];    
-        xlat_y = [-Lxlat_y/2 : dxlat_y : Lxlat_y/2 + dxlat_y/4]; 
-        ylat_x = [-Lylat_x/2 : dylat_x : Lylat_x/2 + dylat_x/4]; 
-        ylat_y = [-Lylat_y/2 : dylat_y : Lylat_y/2 + dylat_y/4]; 
+        xlat_x_array = [-Lxlat_x/2 : dxlat_x : Lxlat_x/2 + dxlat_x/4];    
+        xlat_y_array = [-Lxlat_y/2 : dxlat_y : Lxlat_y/2 + dxlat_y/4]; 
+        ylat_x_array = [-Lylat_x/2 : dylat_x : Lylat_x/2 + dylat_x/4]; 
+        ylat_y_array = [-Lylat_y/2 : dylat_y : Lylat_y/2 + dylat_y/4]; 
 
-        Mx_ones = ones(length(xlat_x));
-        My_ones = ones(length(ylat_x));
+        Mx_ones = ones(length(xlat_x_array));
+        My_ones = ones(length(ylat_x_array));
 
-        xgrid = zeros(length(xlat_x),length(xlat_x));
-        ygrid = zeros(length(ylat_x),length(ylat_x));
+        xgrid = zeros(length(xlat_x_array),length(xlat_x_array));
+        ygrid = zeros(length(ylat_x_array),length(ylat_x_array));
 
         for ix = 1:size(xgrid, 1)
             for iy = 1:size(ygrid, 2)
-                xgrid(ix, iy) = xlat_x(ix) + ylat_x(iy);
-                ygrid(ix, iy) = xlat_y(ix) + ylat_y(iy);
+                xgrid(ix, iy) = xlat_x_array(ix) + ylat_x_array(iy);
+                ygrid(ix, iy) = xlat_y_array(ix) + ylat_y_array(iy);
             end
         end
 
@@ -314,8 +335,8 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
             V_fc = 0*real(Vfourier_scaled);
 
             % gets the z and rho
-            zs = varargin{4}(iss,:)*space_normalization; % make sure to convert to dimensionless coords
-            rhos = varargin{5}(iss,:);
+            zs = varargin{4}(iis,:)*space_normalization; % make sure to convert to dimensionless coords
+            rhos = varargin{5}(iis,:);
 
             % loops over z
             for iz = 1:length(zs)
@@ -354,6 +375,12 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
         grid = [x; y];
         param = [space_normalization, energy_scale];
 
+        figure(is)
+        surf(x, y, Vr')
+        xlabel('x')
+        ylabel('y')
+        view(0,90)
+
         % writes output files
         dlmwrite(strcat("V_graphene", strain_string, ".txt"), V, 'delimiter', ',', 'precision', 16)
 
@@ -367,6 +394,6 @@ function [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = Graphen
 
         dlmwrite(strcat("Julia_params", strain_string, ".txt"), param, 'delimiter', ',', 'precision', 16)
         
-        iss = iss + 1;
+        iis = iis + 1;
     end
 end

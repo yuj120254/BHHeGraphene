@@ -3,7 +3,7 @@
 % of the Graphene_paramters_function. 
 % To run this file, you must have Graphene_lattice.m and
 % Graphene_paramters_function.m in the same folder.
-%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The Graphene_paramters_function ran in this file can handle 5 different
 % sets of inputs, each dealing with a different case of He on graphene, the
 % cases are differentiated by the number of inputs, ranging from 3 to 7.
@@ -155,12 +155,12 @@ isotropic_params = [[0.00,0.05,0.10,0.15,0.20,0.25,0.30],
 % strain_type = "isotropic";
 % 
 % % set the strains for which parameters are to be calclated
-% is_array = [1,2,3,4];%
+% is_array = [1];%
 % 
 % % load density in z for V0
-% min_array = [0, 0, 0, 0];
-% sp_array = [65.98, 65.98, 65.98, 65.98];
-% max_array = [72.18, 72.18, 72.18, 72.18];
+% min_array = [-188.75805524953896];
+% sp_array = [-160.58753714298558];
+% max_array = [-154.69356294952843];
 % 
 % % display the strains for which parameters are to be calclated
 % disp(strcat("computing graphene paramters for ", strain_type, " strain:"));
@@ -178,19 +178,35 @@ isotropic_params = [[0.00,0.05,0.10,0.15,0.20,0.25,0.30],
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Case 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Case 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%THIS DOES NOT CURRENTLY WORK
 
 % % set the type of strain
-% strain_type = "isotropic";
+% strain_type = "anisotropic";
 % 
 % % set the strains for which parameters are to be calclated
-% is_array = [1,2,3,4];%
+% is_array = [1];%
+% % is_array = [1, 2, 19];%
+% 
+% % % load density in z for V0
+% % min_array = [-188.75805524953896, -21.12602520878967];
+% % sp_para_array = [-175.39950844354718, -7.98779019815916]; 
+% % sp_perp_array = [-175.40070201328695, -7.987790198159161];
+% % half_max_perp_array = [-171.61616608330277, -4.230340547886897];
+% % max_para_array = [-171.61738906002037, -4.230340547886895];
 % 
 % % load density in z for V0
-% min_array = [0, 0, 0, 0];
-% sp_para_array = [65.98, 65.98, 65.98, 65.98];
-% sp_perp_array = [65.98, 65.98, 65.98, 65.98];
-% max_array = [72.18, 72.18, 72.18, 72.18];
+% min_array = [-188.75805524953896];
+% sp_para_array = [-121.81671668775209]; 
+% sp_perp_array = [-144.26849027314188];
+% half_max_perp_array = [-143.55037721404412];
+% max_para_array = [-153.75926337593884];
+% 
+% % % load density in z for V0
+% % min_array = [-188.75805524953896, -184.19571474963163, -163.04332252894457];
+% % sp_para_array = [-175.39950844354718, -168.29101289064602, -143.55037721404412]; 
+% % sp_perp_array = [-175.40070201328695, -169.5638502855556, -153.75926337593884];
+% % half_max_perp_array = [-171.61616608330277, -164.5929127221803, -145.2393372248427];
+% % max_para_array = [-171.61738906002037, -163.61725278338128, 71.38735905486963];
 % 
 % % display the strains for which parameters are to be calclated
 % disp(strcat("computing graphene paramters for ", strain_type, " strain:"));
@@ -201,8 +217,8 @@ isotropic_params = [[0.00,0.05,0.10,0.15,0.20,0.25,0.30],
 % % Calls the functions
 % [V, V_lat, V_fc, lattice_vectors, grid, param, strain_string] = ...
 %     Graphene_parameters_function(strain_type, is_array, "external_anisotropic", ...
-%     min_array, sp_para_array, sp_perp_array, max_array);
+%     min_array, sp_para_array, sp_perp_array, half_max_perp_array, max_para_array);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% End Case 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% End Case 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%THIS DOES NOT CURRENTLY WORK
 
 
