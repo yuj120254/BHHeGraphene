@@ -19,3 +19,8 @@ Currently there are 4 working cases of He on Graphene that is included in this f
 Currently the file make_2D_Bloch_bands_v13a.m is set up to work with the example of case 1 in the main file.
 
 The files in the shooting method folder produces the ground state wavefunction for the third case of the main file.
+The only file that needs to be ran in that file is find_z_dens_shooting.m, but all of the .m files are required to run it.
+It takes some input in the form of two columns, z in Angstroms and V(z). The example given is the file called He_Graphene_V0.txt.
+It outputs the ground state wavefunction of the solution to that potential, in two columns: z in Angstroms and rho(z), whose name can be changed. 
+The example given is V0_rho0.txt. This file is then to be copied into the same folder as Graphene_parameters_function.m when running the 3rd case.
+For each value of strain, the density file must be individually loaded and normalized, then the densities are put into the array as explained in the file. 
