@@ -32,22 +32,16 @@ function [E_array, Psi_found, dPsi_found] = shooting_method_function(Psi0, dPsi0
     while foundn<n+1 % While not converged
         E_find = E_find + step; % Increase E by the step
         [Psi, dPsi] = ShootingMethodPredict(Psi0, dPsi0, r, V, E_find); % Solve for Psi in the interval
-        
-        % plot the wavefunction
-        figure(1)
-        plot(r, Psi)
-        ylim([-1000, 1000])
-        
+
         % Interval bisection method for finding E
         if (abs(Psi(end)) > cutoff)
-            if not(zeroing)
-                if (last_Psi/Psi(end) < 0)
+            if not(zeroing) % Before the sign of the final step of Psi changes, just increase E
+                if (last_Psi/Psi(end) < 0) % Check if the sign has changed
+                    % Once the sign changes, immediately switches to the interval bisection step
                     zeroing = true;
                     step = step * -0.5;
-                else
-                    step = step * 1.2;
                 end
-            else
+            else % Actual interval bisection steps
                 if (last_Psi/Psi(end) < 0)
                     step = step * -0.5;
                 else
@@ -57,14 +51,14 @@ function [E_array, Psi_found, dPsi_found] = shooting_method_function(Psi0, dPsi0
                     
             last_Psi = Psi(end);
             last_dPsi = dPsi(end);
-        else
+        else % Once the solution is found, get all outputs
             E_array(foundn) = E_find;
             
             Psi_found(foundn, :) = Psi;
             dPsi_found(foundn, :) = dPsi;
             
             E_find = E_find + initial_step;
-            step = initial_step;
+            step = initial_step; % Reset the steps
             
             [Psi, dPsi] = ShootingMethodPredict(Psi0, dPsi0, r, V, E_find);
             last_Psi = Psi(end);
