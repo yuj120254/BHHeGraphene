@@ -26,6 +26,6 @@ ShootingMethodPredict.m, which solves a single shooting method solution.
 f2.m is a helper function for ShootingMethodPredict.m
 
 find_z_dens_shooting.m takes some input in the form of two columns, z in Angstroms and V(z). The example given is the file called He_Graphene_V0.txt.
-It outputs the ground state wavefunction of the solution to that potential, in two columns: z in Angstroms and rho(z), whose name can be changed. 
+It outputs the normalized ground state density of the solution to that potential, in two columns: z in Angstroms and rho(z), whose name can be changed. 
 The example given is V0_rho0.txt. This file is then to be copied into the same folder as Graphene_parameters_function.m when running the 3rd case.
 For each value of strain, the density file must be individually loaded and normalized, then the densities are put into the array as explained in the file. 
