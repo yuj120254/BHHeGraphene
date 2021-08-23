@@ -127,8 +127,18 @@ isotropic_params = [[0.00,0.05,0.10,0.15,0.20,0.25,0.30],
 % 
 % % load density in z for V0
 % z_rho_V0 = dlmread("V0_rho0.txt");
-% z_V0 = z_rho_V0(200:5:350,1);
+% z_V0 = z_rho_V0(200:5:350,1); % Steps of 5 are used to speed up the calculation.
 % rho_V0 = z_rho_V0(200:5:350,2)/sum(z_rho_V0(200:5:350,2));% Important: always normalize rho here
+% 
+% % % load density in z for some other V, for example. Keep commented unless
+% % needed.
+% % z_rho_V1 = dlmread("V1_rho1.txt");
+% % z_V1 = z_rho_V0(200:5:350,1);
+% % rho_V1 = z_rho_V0(200:5:350,2)/sum(z_rho_V0(200:5:350,2));% Important: always normalize rho here
+% 
+% % When multiple strain values are needed, each density must be individually
+% % loaded and normalized, each to a different name. They are then put in
+% % order into the array below.
 % 
 % z_array = [z_V0; z_V0; z_V0; z_V0];
 % rho_array = [rho_V0; rho_V0; rho_V0; rho_V0];
