@@ -30,8 +30,6 @@ end
 
 % Truncates the potential given to the shooting potential code
 n = max_index + 50;
-figure(1)
-plot(r_He_He0(1:n), V_He_He_rev(1:n));
 
 % Calls the shooting method function
 [E_found, Psis, dPsis] = shooting_method_function(0, 1, r_He_He0(1:n), V_He_He_rev(1:n), 1, 1, 1, -250);
@@ -39,6 +37,8 @@ plot(r_He_He0(1:n), V_He_He_rev(1:n));
 % Plots the first wavefunction
 figure(3)
 plot(r_He_He_rev(1:n), Psis(1,:))
+title("Unnormalized ground state wavefunction")
+xlabel("z(Angstroms)")
 
 % Put the wavefunction back on the original z array
 Psi1 = 0*r_He_He0;
