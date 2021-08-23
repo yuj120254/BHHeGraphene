@@ -17,3 +17,5 @@ Currently there are 4 working cases of He on Graphene that is included in this f
 
 
 Currently the file make_2D_Bloch_bands_v13a.m is set up to work with the example of case 1 in the main file.
+
+The files in the shooting method folder produces the ground state wavefunction for the third case of the main file.
